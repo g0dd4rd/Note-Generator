@@ -4,6 +4,7 @@ import java.util.Hashtable;
 public class NotesGenerator {
 
   public static void main(String[] args) {
+                              //0    1     2    3     4    5    6     7    8     9    10    11
     String[] flatChromatic  = {"c", "db", "d", "eb", "e", "f", "gb", "g", "ab", "a", "bb", "b"};
     String[] sharpChromatic = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
 
@@ -33,12 +34,12 @@ public class NotesGenerator {
     String[] chromaticParent = null;
     int startingNote = 0;
 
-    if(Arrays.asList(flatChromatic).contains(key)) {
-      chromaticParent = flatChromatic;
-      startingNote = Arrays.asList(flatChromatic).indexOf(key);
-    } else {
+    if(!key.equals("f") &&  Arrays.asList(sharpChromatic).contains(key)) {
       chromaticParent = sharpChromatic;
       startingNote = Arrays.asList(sharpChromatic).indexOf(key);
+    } else {
+      chromaticParent = flatChromatic;
+      startingNote = Arrays.asList(flatChromatic).indexOf(key);
     }
 
     String[] parentScale = new String[scaleFormula.length];
