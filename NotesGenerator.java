@@ -85,6 +85,6 @@ public class NotesGenerator {
       System.out.print(notes[i] +", ");
     }
 
-    System.out.print(notes[offset] +"\n");
+    System.out.println("");
   }
 }
