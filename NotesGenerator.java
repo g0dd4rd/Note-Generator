@@ -1,90 +1,180 @@
 import java.util.Arrays;
-import java.util.Hashtable;
 
 public class NotesGenerator {
 
   public static void main(String[] args) {
-                              //0    1     2    3     4    5    6     7    8     9    10    11
-    String[] flatChromatic  = {"c", "db", "d", "eb", "e", "f", "gb", "g", "ab", "a", "bb", "b"};
-    String[] sharpChromatic = {"c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"};
-
-    int[] scaleFormula = {0, 2, 4, 5, 7, 9, 11};
 
     if(args.length < 2) {
       System.out.println("Usage examples:");
       System.out.println("- C ionian");
       System.out.println("- Bb dorian");
-      System.out.println("- Eb phrygian");
+      System.out.println("- F# lydian");
       System.exit(0);
     }
 
-    String key = "C";
-    String scaleType = "major";
-    if(args.length == 2) {
-      key = args[0].toLowerCase();
-      scaleType = args[1].toLowerCase();
-    }
-
-    /*if(args.length == 3) {
-      key = args[0].toLowerCase();
-      sharpOrFlat = args[1].toLowerCase();
-      scaleType = args[2].toLowerCase();
-    }*/
-
-    String[] chromaticParent = null;
-    int startingNote = 0;
-
-    if(!key.equals("f") &&  Arrays.asList(sharpChromatic).contains(key)) {
-      chromaticParent = sharpChromatic;
-      startingNote = Arrays.asList(sharpChromatic).indexOf(key);
+    int cycle = 0;
+    int degree = 0;
+    String accidental = null;
+    String origin = null;
+    String key = args[0].toLowerCase();
+    if(key.substring(1, key.length()).contains("b") || key.equals("f") || key.equals("c")) {
+      cycle = 3;
+      degree = 3;
+      accidental = "b";
+      origin = "flat";
     } else {
-      chromaticParent = flatChromatic;
-      startingNote = Arrays.asList(flatChromatic).indexOf(key);
+      cycle = 4;
+      degree = 6;
+      accidental = "#";
+      origin = "sharp";
     }
 
-    String[] parentScale = new String[scaleFormula.length];
-    int chromaticIndex = 0; 
-    for(int i = 0; i < scaleFormula.length; i++) {
-      chromaticIndex = scaleFormula[i] + startingNote;
-      if(chromaticIndex >= chromaticParent.length) {
-        chromaticIndex = (scaleFormula[i] + startingNote) - chromaticParent.length;
-      }
+    String mode = args[1].toLowerCase();
 
-      parentScale[i] = chromaticParent[chromaticIndex];
+    String[] result = createIonian(key, mode, cycle, accidental, degree);
+    switch(mode) {
+      case "ionian"     : printResult(result);
+                          break;
+      case "dorian"     : createOther(mode, origin, accidental, result, new int[] {2, 6});
+                          break;
+      case "phrygian"   : createOther(mode, origin, accidental, result, new int[] {1, 2, 5, 6});
+                          break;
+      case "lydian"     : createOther(mode, origin, accidental, result, new int[] {3});
+                          break;
+      case "mixolydian" : createOther(mode, origin, accidental, result, new int[] {6});
+                          break;
+      case "aeolian"    : createOther(mode, origin, accidental, result, new int[] {2, 5, 6});
+                          break;
+      case "locrian"    : createOther(mode, origin, accidental, result, new int[] {1, 2, 4, 5, 6});
+                          break;
     }
-
-    switch(scaleType) {
-      case "major" :     generateMode(parentScale, scaleFormula, 0);
-                         break;
-      case "ionian":     generateMode(parentScale, scaleFormula, 0);
-                         break;
-      case "dorian":     generateMode(parentScale, scaleFormula, 1);
-                         break;
-      case "phrygian":   generateMode(parentScale, scaleFormula, 2);
-                         break;
-      case "lydian":     generateMode(parentScale, scaleFormula, 3);
-                         break;
-      case "mixolydian": generateMode(parentScale, scaleFormula, 4);
-                         break;
-      case "aeolian":    generateMode(parentScale, scaleFormula, 5);
-                         break;
-      case "locrian":    generateMode(parentScale, scaleFormula, 6);
-                         break;
-    }
-
-    System.out.println("key: "+ key +", starting note: "+ startingNote +", scale type: "+ scaleType);
- 
   }
 
-  static void generateMode(String[] notes, int[] formula, int offset) {
-    for(int i = offset, j = 0; j < formula.length; i++, j++) {
-      if(i == formula.length) {
+  static String[] createIonian(String key, String mode, int cycle, String accidental, int degree) {
+    String[] notes = {"c", "d", "e", "f", "g", "a", "b"};
+    String[] result = new String[notes.length];
+
+    if(!Arrays.asList(notes).contains(key.substring(1, key.length()))) {
+      System.out.println("No match found");
+      System.exit(0);
+    }
+
+    int storedIndex = 0;
+    for(int i = 0, j = 0, resultIndex = 0; j < notes.length * 15; i++, j++, resultIndex++) {
+      if(i >= notes.length) {
         i = 0;
       }
 
-      System.out.print(notes[i] +", ");
+      if(resultIndex >= notes.length) {
+        resultIndex = 0;
+
+        if(result[0].equals(key))
+          break;
+      }
+
+      if(j % notes.length == cycle) {
+        storedIndex = i;
+      }
+
+      if(j % notes.length == 0) {
+        i = storedIndex;
+      }
+
+      if(j > notes.length && j % notes.length == degree) {
+        notes[i] = notes[i].concat(accidental); 
+      }
+
+      result[resultIndex] = notes[i];
     }
 
-    System.out.println("");
+    return result;
+  }
+
+  static void createOther(String mode, String origin, String accidental,
+                                        String[] result, int[] indices) {
+
+    if(mode.equals("dorian") && origin.equals("sharp") && result[0].equals("g")) {
+        result[2] = result[2].concat("b");
+        result[6] = result[6].substring(0, 1);
+        printResult(result);
+        return;
+    } 
+
+    if(mode.equals("lydian")) {
+      if(origin.equals("flat") && !result[0].equals("c")) {
+        result[3] = result[3].substring(0, result[3].length() - 1);
+      } else if(result[0].equals("c")) {
+        result[3] = result[3].concat("#");
+      } else {
+        result[3] = result[3].concat(accidental);
+      }
+
+      printResult(result);
+      return;
+    }
+
+    if(mode.equals("aeolian") && origin.equals("sharp") && 
+      (result[0].equals("d") || result[0].equals("g"))) {        
+      if(result[0].equals("d")) {
+        result[2] = result[2].substring(0, result[2].length() - 1);
+        result[5] = result[5].concat("b");
+        result[6] = result[6].substring(0, result[6].length() - 1);
+      } else if(result[0].equals("g")) {
+        result[2] = result[2].concat("b");
+        result[5] = result[5].concat("b");
+        result[6] = result[6].substring(0, result[6].length() - 1);
+      }
+
+      printResult(result);
+      return;
+    }
+
+    if(mode.equals("locrian") && origin.equals("sharp") &&
+    (result[0].equals("d") | result[0].equals("e") | result[0].equals("g") | result[0].equals("a"))) {
+      if(result[0].equals("d")) {
+        result[1] = result[1].concat("b");
+        result[2] = result[2].substring(0, result[2].length() - 1);
+        result[4] = result[4].concat("b");
+        result[5] = result[5].concat("b");
+        result[6] = result[6].substring(0, result[6].length() - 1);
+      } else if(result[0].equals("e")) {
+        result[1] = result[1].substring(0, result[1].length() - 1);
+        result[2] = result[2].substring(0, result[2].length() - 1);
+        result[4] = result[4].concat("b");
+        result[5] = result[5].substring(0, result[5].length() - 1);
+        result[6] = result[6].substring(0, result[6].length() - 1);
+      } else if(result[0].equals("g")) {
+        result[1] = result[1].concat("b");
+        result[2] = result[2].concat("b");
+        result[4] = result[4].concat("b");
+        result[5] = result[5].concat("b");
+        result[6] = result[6].substring(0, result[6].length() - 1);
+      } else if(result[0].equals("a")) {
+        result[1] = result[1].concat("b");
+        result[2] = result[2].substring(0, result[2].length() - 1);
+        result[4] = result[4].concat("b");
+        result[5] = result[5].substring(0, result[5].length() - 1);
+        result[6] = result[6].substring(0, result[6].length() - 1);
+      }
+
+      printResult(result);
+      return;
+    }
+
+    for(int index : indices) {
+      if(origin.equals("flat")) {
+        result[index] = result[index].concat(accidental);
+      } else {
+        result[index] = result[index].substring(0, result[index].length() - 1);
+      }
+    }
+
+    printResult(result);
+  }
+
+  static void printResult(String[] result) {
+    for(String s : result) 
+      System.out.print(s.substring(0, 1).toUpperCase() + s.substring(1) +", ");
   }
 }
+
