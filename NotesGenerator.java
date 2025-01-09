@@ -54,7 +54,7 @@ public class NotesGenerator {
     String[] notes = {"c", "d", "e", "f", "g", "a", "b"};
     String[] result = new String[notes.length];
 
-    if(!Arrays.asList(notes).contains(key.substring(1, key.length()))) {
+    if(!Arrays.asList(notes).contains(key.substring(0, 1))) {
       System.out.println("No match found");
       System.exit(0);
     }
